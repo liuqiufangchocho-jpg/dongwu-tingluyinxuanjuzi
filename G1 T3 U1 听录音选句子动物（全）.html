@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>G1 T3 U1 动物练习</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --water-blue: #4fc3f7;
+            --deep-blue: #0288d1;
+            --grass-green: #8bc34a;
+            --white: #ffffff;
+            --font-kai: "KaiTi", "楷体", STKaiti, serif;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--water-blue);
+            background-image: radial-gradient(circle at 50% 50%, #81d4fa 0%, #29b6f6 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 登录/开始界面容器 */
+        #login-screen {
+            position: absolute;
+            z-index: 200;
+            background: white;
+            padding: 50px 40px;
+            border-radius: 30px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 450px;
+            display: block; 
+        }
+
+        .start-btn-large {
+            background: transparent;
+            border: none;
+            font-size: 80px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            margin-top: 10px;
+            padding: 0;
+            outline: none;
+        }
+
+        .start-btn-large:active {
+            transform: scale(0.9);
+        }
+
+        /* 游戏界面布局 - 初始强制隐藏 */
+        #game-interface {
+            display: none !important; 
+            width: 100%;
+            max-width: 1200px;
+            height: 100vh;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 50px;
+            position: relative;
+        }
+
+        /* 进度条 */
+        .progress-aside {
+            width: 60px;
+            height: 60%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .v-progress-container {
+            flex: 1;
+            width: 25px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 15px;
+            border: 2px solid white;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+        }
+
+        .v-progress-bar {
+            width: 100%;
+            background: var(--grass-green);
+            transition: height 0.4s ease;
+        }
+
+        .v-progress-text {
+            writing-mode: vertical-lr;
+            transform: rotate(180deg);
+            color: #01579b;
+            font-weight: bold;
+            font-size: 16px;
+            white-space: nowrap;
+        }
+
+        /* 游戏核心区 */
+        #game-container {
+            flex: 1;
+            max-width: 750px;
+            margin: 0 40px;
+            background: white;
+            border-radius: 40px;
+            padding: 35px;
+            box-shadow: 0 15px 0px #0277bd;
+            text-align: center;
+            position: relative;
+        }
+
+        .start-instruction {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 2;
+        }
+
+        .start-instruction ruby {
+            font-size: 16px;
+        }
+
+        .emoji-display {
+            font-size: 120px; 
+            margin: 5px 0;
+            filter: drop-shadow(0 8px 8px rgba(0,0,0,0.1));
+        }
+
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; 
+        }
+
+        .option-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .option-item {
+            flex: 1;
+            background: #f1f8e9;
+            border: 3px solid var(--grass-green);
+            border-radius: 20px;
+            padding: 12px 20px; 
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            min-height: 85px;
+        }
+
+        .option-item:hover { background: #f9fdf5; }
+        .option-item:active { transform: scale(0.98); }
+
+        .option-label {
+            position: absolute;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--grass-green);
+        }
+
+        ruby { font-family: var(--font-kai); font-size: 28px; font-weight: bold; }
+        rt { font-family: Arial; font-size: 0.45em; color: #e64a19; }
+
+        .speaker-btn { 
+            font-size: 36px; 
+            background: white; 
+            border: 2px solid #eee; 
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer; 
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .speaker-btn:hover { background: #f0f0f0; transform: scale(1.05); }
+
+        #next-btn {
+            width: 80px;
+            height: 80px;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 50%;
+            font-size: 45px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            display: none; 
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        #next-btn:active { transform: scale(0.9); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        /* 证书 */
+        #report-area {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            display: none;
+        }
+
+        #certificate {
+            background: #fff;
+            width: 420px;
+            padding: 30px;
+            border-radius: 20px;
+            border: 12px solid var(--deep-blue);
+            text-align: center;
+        }
+
+        .trophy { font-size: 70px; margin-bottom: 10px; }
+        .cert-score { font-size: 80px; color: var(--grass-green); margin: 15px 0; font-weight: bold; }
+        
+        #fireworks-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .shake { animation: shake 0.3s; }
+
+        @media (max-width: 900px) {
+            #game-interface { flex-direction: column; padding: 10px; justify-content: center; }
+            .progress-aside { position: absolute; left: 10px; top: 15%; height: 40%; width: 25px; }
+            #game-container { margin: 10px 0; width: 95%; padding: 20px; }
+            .option-item { min-height: 70px; padding: 8px 15px; }
+            ruby { font-size: 22px; }
+            .speaker-btn { width: 50px; height: 50px; font-size: 28px; }
+            #next-btn { position: fixed; right: 20px; bottom: 20px; width: 70px; height: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <h2 style="color: var(--deep-blue); margin-top: 0; margin-bottom: 10px; font-size: 32px;">Animals Quiz</h2>
+    <div class="start-instruction">
+        Please click the speaker to listen and choose the correct answer.
+    </div>
+    <button class="start-btn-large" onclick="checkStart()">👉</button>
+</div>
+
+<div id="game-interface">
+    <div class="progress-aside">
+        <div class="v-progress-text" id="pt">Level 1/10</div>
+        <div class="v-progress-container">
+            <div class="v-progress-bar" id="pb"></div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div class="emoji-display" id="main-emoji">🐱</div>
+        <div class="options-list" id="options-container"></div>
+    </div>
+
+    <div style="width: 80px; display: flex; justify-content: center;">
+        <button id="next-btn" onclick="nextQuestion()">👉</button>
+    </div>
+</div>
+
+<div id="report-area">
+    <div id="certificate">
+        <div class="trophy">🏆</div>
+        <div class="cert-title" style="font-size: 32px; font-weight: bold; color: var(--deep-blue);">CERTIFICATE</div>
+        
+        <div class="cert-score">100</div>
+        <div style="margin-top: 10px;">
+            <ruby>你<rt>nǐ</rt></ruby><ruby>真<rt>zhēn</rt></ruby><ruby>棒<rt>bàng</rt></ruby>！
+        </div>
+        <button style="margin-top: 30px; padding: 10px 30px; background: var(--grass-green); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 18px;" onclick="downloadImage()">Save (حفظ)</button>
+    </div>
+</div>
+
+<canvas id="fireworks-canvas"></canvas>
+
+<script>
+    const animals = [
+        {word: "猫", pinyin: "māo", emoji: "🐱"},
+        {word: "狗", pinyin: "gǒu", emoji: "🐶"},
+        {word: "鸟", pinyin: "niǎo", emoji: "🐦"},
+        {word: "鱼", pinyin: "yú", emoji: "🐟"},
+        {word: "马", pinyin: "mǎ", emoji: "🐎"},
+        {word: "熊猫", pinyin: "xióngmāo", emoji: "🐼"},
+        {word: "骆驼", pinyin: "luòtuó", emoji: "🐫"},
+        {word: "老虎", pinyin: "lǎohǔ", emoji: "🐯"},
+        {word: "牛", pinyin: "niú", emoji: "🐮"},
+        {word: "羊", pinyin: "yáng", emoji: "🐑"}
+    ];
+
+    let currentIdx = 0;
+    let quizPool = [];
+    let isCorrect = false;
+
+    function checkStart() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('game-interface').style.setProperty('display', 'flex', 'important');
+        startQuiz();
+    }
+
+    function startQuiz() {
+        currentIdx = 0;
+        quizPool = generateQuiz();
+        showQuestion();
+    }
+
+    function generateQuiz() {
+        let pool = [...animals].sort(() => Math.random() - 0.5);
+        let quiz = [];
+        
+        for (let i = 0; i < 10; i++) {
+            let target = pool[i];
+            let options = [];
+            
+            if (i < 6) {
+                options.push({ text: `这是${target.word}`, py: target.pinyin, isTrue: true });
+                let others = animals.filter(a => a.word !== target.word);
+                let d1 = others.splice(Math.floor(Math.random()*others.length), 1)[0];
+                options.push({ text: `这是${d1.word}`, py: d1.pinyin, isTrue: false });
+                options.push({ text: `这不是${target.word}`, py: target.pinyin, isTrue: false });
+            } else {
+                let others = animals.filter(a => a.word !== target.word);
+                // 抽取三个互不相同的非目标动物
+                let d1 = others.splice(Math.floor(Math.random()*others.length), 1)[0];
+                let d2 = others.splice(Math.floor(Math.random()*others.length), 1)[0];
+                let d3 = others.splice(Math.floor(Math.random()*others.length), 1)[0];
+                
+                // 正确选项：这不是[动物A]
+                options.push({ text: `这不是${d1.word}`, py: d1.pinyin, isTrue: true });
+                // 干扰选项：这是[动物B]、这是[动物C]
+                options.push({ text: `这是${d2.word}`, py: d2.pinyin, isTrue: false });
+                options.push({ text: `这是${d3.word}`, py: d3.pinyin, isTrue: false });
+            }
+            quiz.push({ emoji: target.emoji, options: options.sort(() => Math.random() - 0.5) });
+        }
+        
+        // 打乱整个题目的顺序，将两种题型混合
+        return quiz.sort(() => Math.random() - 0.5);
+    }
+
+    function showQuestion() {
+        const q = quizPool[currentIdx];
+        document.getElementById('main-emoji').textContent = q.emoji;
+        isCorrect = false;
+        document.getElementById('next-btn').style.display = 'none';
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        const labels = ['A', 'B', 'C'];
+        
+        q.options.forEach((opt, i) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'option-wrapper';
+            
+            const item = document.createElement('div');
+            item.className = 'option-item';
+            item.id = `opt${i}`;
+            item.onclick = () => handleChoice(i);
+            
+            let isNegative = opt.text.includes('这不是');
+            let prefix = isNegative ? 
+                `<ruby>这<rt>zhè</rt></ruby><ruby>不<rt>bú</rt></ruby><ruby>是<rt>shì</rt></ruby>` :
+                `<ruby>这<rt>zhè</rt></ruby><ruby>是<rt>shì</rt></ruby>`;
+            
+            let animalPart = opt.text.replace('这是', '').replace('这不是', '');
+            
+            item.innerHTML = `
+                <span class="option-label">${labels[i]}.</span>
+                <div>${prefix}<ruby>${animalPart}<rt>${opt.py}</rt></ruby></div>
+            `;
+            
+            const speaker = document.createElement('button');
+            speaker.className = 'speaker-btn';
+            speaker.innerHTML = '📢';
+            speaker.onclick = (e) => {
+                e.stopPropagation();
+                playTTS(opt.text);
+            };
+            
+            wrapper.appendChild(item);
+            wrapper.appendChild(speaker);
+            container.appendChild(wrapper);
+        });
+        updateProgress();
+    }
+
+    function playTTS(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-CN'; 
+        msg.rate = 0.8;
+        window.speechSynthesis.speak(msg);
+    }
+
+    function handleChoice(idx) {
+        if (isCorrect) return;
+        const opt = quizPool[currentIdx].options[idx];
+        const btn = document.getElementById(`opt${idx}`);
+        if (opt.isTrue) {
+            isCorrect = true;
+            btn.style.background = '#c8e6c9'; 
+            btn.style.borderColor = '#4caf50';
+            document.getElementById('next-btn').style.display = 'flex';
+        } else {
+            btn.classList.add('shake');
+            setTimeout(() => btn.classList.remove('shake'), 300);
+            playErrorTone();
+        }
+    }
+
+    function updateProgress() {
+        document.getElementById('pb').style.height = ((currentIdx+1)/10)*100 + '%';
+        document.getElementById('pt').textContent = `Question ${currentIdx+1}/10`;
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if(currentIdx < 10) showQuestion(); else finish();
+    }
+
+    function finish() {
+        document.getElementById('game-interface').style.setProperty('display', 'none', 'important');
+        document.getElementById('report-area').style.display = 'block';
+        startFireworks();
+        playFinalCheer();
+    }
+
+    function playFinalCheer() {
+        const msg = new SpeechSynthesisUtterance("棒！棒！你真棒！");
+        msg.lang = 'zh-CN'; 
+        msg.rate = 0.9;
+        msg.pitch = 1.3; 
+        window.speechSynthesis.speak(msg);
+    }
+
+    function playErrorTone() {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.stop(audioCtx.currentTime + 0.3);
+    }
+
+    function startFireworks() {
+        const canvas = document.getElementById('fireworks-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        let particles = [];
+        function createParticle(x, y) {
+            for(let i=0; i<35; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random()-0.5)*15, vy: (Math.random()-0.5)*15,
+                    color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                    life: 1
+                });
+            }
+        }
+        let fireworkTimer = setInterval(() => createParticle(Math.random()*canvas.width, Math.random()*canvas.height*0.5), 500);
+        function loop() {
+            ctx.clearRect(0,0,canvas.width, canvas.height);
+            particles.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.life -= 0.02;
+                if(p.life <= 0) particles.splice(i, 1);
+                ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
+            });
+            if (document.getElementById('report-area').style.display === 'block') {
+                requestAnimationFrame(loop);
+            } else {
+                clearInterval(fireworkTimer);
+            }
+        }
+        loop();
+    }
+
+    function downloadImage() {
+        html2canvas(document.getElementById('certificate')).then(c => {
+            const link = document.createElement('a');
+            link.download = `Certificate.png`;
+            link.href = c.toDataURL(); link.click();
+        });
+    }
+</script>
+
+</body>
+</html>
